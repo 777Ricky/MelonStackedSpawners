@@ -160,7 +160,6 @@ public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements
 
 					final LivingEntity livingEntity = (LivingEntity) location.getWorld().spawnEntity(event.getLocation(), entityType);
 					if (livingEntity instanceof Ageable ageable) ageable.setAdult();
-					livingEntity.setAI(false);
 					final StackEntity stackEntity = StackMob.getPlugin(StackMob.class).getEntityManager().registerStackedEntity(livingEntity);
 					stackEntity.setSize(stackAmount);
 				}, unused -> {

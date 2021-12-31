@@ -28,6 +28,8 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,6 +126,14 @@ public final class StackedSpawnerRegistry {
 	}
 
 	public static int getChunksWithStackedSpawnersCount() {
-		return chunkCache.size();
+		final List<Chunk> finalChunks = new ArrayList<>();
+
+		chunkCache.keySet().stream().map(ChunkPair::chunk)
+				.filter(chunk -> finalChunks.stream().noneMatch(chunk1 -> chunk1.getX() == chunk.getX()
+						&& chunk1.getZ() == chunk.getZ()
+						&& chunk1.getWorld().getName().equals(chunk.getWorld().getName())))
+				.forEach(finalChunks::add);
+
+		return finalChunks.size();
 	}
 }

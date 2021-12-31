@@ -24,13 +24,17 @@ import gg.blocky.melonstackedspawners.database.SpawnerDatabase;
 import gg.blocky.melonstackedspawners.database.implementation.SpawnerDatabaseSQLite;
 import gg.blocky.melonstackedspawners.module.spawner.StackedSpawnerCommand;
 import gg.blocky.melonstackedspawners.module.spawner.StackedSpawnerListener;
+import gg.blocky.melonstackedspawners.module.spawner.StackedSpawnerRegistry;
 import gg.blocky.melonstackedspawners.setting.Settings;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public final class SpawnerPlugin extends JavaPlugin {
@@ -40,6 +44,8 @@ public final class SpawnerPlugin extends JavaPlugin {
 	private SilkUtil silkUtil;
 	private SpawnerDatabase spawnerDatabase;
 	private PaperCommandManager commandManager;
+
+	private BukkitTask spawnerSaveTask;
 
 	public SpawnerPlugin() {
 		if (instance != null) throw new IllegalStateException("Only one instance can run at the time");
@@ -65,6 +71,14 @@ public final class SpawnerPlugin extends JavaPlugin {
 		this.commandManager.registerCommand(new StackedSpawnerCommand());
 
 		this.getServer().getPluginManager().registerEvents(new StackedSpawnerListener(spawnerDatabase), this);
+
+		int fiveMinutesInSeconds = (int) TimeUnit.MINUTES.toSeconds(5);
+		this.spawnerSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+			StackedSpawnerRegistry.cacheStackedSpawnerLoop(spawnerDatabase::updateStackedSpawnerAmount);
+			this.getLogger().info("Saved " + StackedSpawnerRegistry.getStackedSpawnerCount() + " stacked spawners ("
+					+ StackedSpawnerRegistry.getTotalSpawnerCount() + " individuals) in "
+					+ StackedSpawnerRegistry.getChunksWithStackedSpawnersCount() + " chunks!");
+		}, fiveMinutesInSeconds * 20L, fiveMinutesInSeconds * 20L);
 	}
 
 	@Override

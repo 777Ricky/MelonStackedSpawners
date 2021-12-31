@@ -25,6 +25,7 @@ import gg.blocky.melonstackedspawners.util.SpawnerUtil;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -45,6 +46,8 @@ public final class StackedSpawner {
 		this.entityType = entityType;
 		this.stackAmount = stackAmount;
 
+		if (this.block.getType() != Material.SPAWNER) block.setType(Material.SPAWNER);
+
 		final CreatureSpawner creatureSpawner = this.getCreatureSpawner();
 		if (creatureSpawner == null) {
 			SpawnerPlugin.getInstance().getSpawnerDatabase().deleteStackedSpawner(this);
@@ -53,7 +56,9 @@ public final class StackedSpawner {
 		}
 
 		creatureSpawner.setSpawnCount(1);
+		creatureSpawner.setSpawnedType(entityType);
 		creatureSpawner.update(true);
+
 		this.updateHologram();
 	}
 

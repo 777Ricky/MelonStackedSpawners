@@ -96,4 +96,9 @@ public final class SpawnerDatabaseSQLite extends SpawnerDatabase {
 				stackedSpawner.getBlock().getLocation().getBlockZ()
 		);
 	}
+
+	@Override
+	public void updateAllStackAmounts() {
+		StackedSpawnerRegistry.cacheStackedSpawnerLoop(this::updateStackedSpawnerAmount);
+	}
 }

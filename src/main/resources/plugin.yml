@@ -1,5 +1,5 @@
 name: MelonStackedSpawners
-version: 1.3
+version: 1.4
 main: gg.blocky.melonstackedspawners.SpawnerPlugin
 description: Plugin provided by Blocky Studios, LLC
 authors: [ "Blocky Studios, LLC", "Cody Lynn" ]

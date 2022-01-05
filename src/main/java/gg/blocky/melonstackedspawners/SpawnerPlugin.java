@@ -28,6 +28,8 @@ import gg.blocky.melonstackedspawners.module.spawner.StackedSpawnerRegistry;
 import gg.blocky.melonstackedspawners.setting.Settings;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.libs.org.apache.commons.io.FileUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -45,7 +47,7 @@ public final class SpawnerPlugin extends JavaPlugin {
 	private SpawnerDatabase spawnerDatabase;
 	private PaperCommandManager commandManager;
 
-	private BukkitTask spawnerSaveTask;
+	private BukkitTask spawnerSaveTask, spawnerBlockTypeTask;
 
 	public SpawnerPlugin() {
 		if (instance != null) throw new IllegalStateException("Only one instance can run at the time");
@@ -79,11 +81,19 @@ public final class SpawnerPlugin extends JavaPlugin {
 					+ StackedSpawnerRegistry.getTotalSpawnerCount() + " individuals) in "
 					+ StackedSpawnerRegistry.getChunksWithStackedSpawnersCount() + " chunks!");
 		}, fiveMinutesInSeconds * 20L, fiveMinutesInSeconds * 20L);
+
+		this.spawnerBlockTypeTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
+			StackedSpawnerRegistry.cacheStackedSpawnerLoop(stackedSpawner -> {
+				final Block block = stackedSpawner.getBlock();
+				if (block.getType() != Material.SPAWNER) block.setType(Material.SPAWNER);
+			});
+		}, fiveMinutesInSeconds * 20L, fiveMinutesInSeconds * 20L);
 	}
 
 	@Override
 	public void onDisable() {
 		this.spawnerDatabase.disable();
+		if (!this.spawnerSaveTask.isCancelled()) this.spawnerSaveTask.cancel();
 	}
 
 	private void createBackupOfCurrentDatabase() {

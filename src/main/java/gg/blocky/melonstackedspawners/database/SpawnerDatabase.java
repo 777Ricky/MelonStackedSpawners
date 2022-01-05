@@ -112,6 +112,8 @@ public abstract class SpawnerDatabase {
 
 	public abstract void updateStackedSpawnerAmount(StackedSpawner stackedSpawner);
 
+	public abstract void updateAllStackAmounts();
+
 	public enum Query {
 		CREATE_TABLE("CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (" +
 				"world VARCHAR(36), " +

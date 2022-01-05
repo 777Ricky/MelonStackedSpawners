@@ -48,8 +48,10 @@ import java.util.concurrent.ForkJoinPool;
 
 public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements Listener {
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockPlace(BlockPlaceEvent event) {
+		if (event.isCancelled()) return;
+
 		final Player player = event.getPlayer();
 
 		final ItemStack itemInHand = event.getItemInHand();
@@ -57,6 +59,12 @@ public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements
 
 		if (event.getHand() != EquipmentSlot.HAND) {
 			player.sendMessage(HexUtil.colorify("&cSpawners are not allowed in off hand!"));
+			event.setCancelled(true);
+			return;
+		}
+
+		if (event.getBlockReplacedState().getType() != Material.AIR) {
+			player.sendMessage(HexUtil.colorify("&cCannot place spawner, something is blocking it!"));
 			event.setCancelled(true);
 			return;
 		}
@@ -73,16 +81,16 @@ public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements
 		final boolean isSneaking = player.isSneaking();
 
 		final Block blockAgainst = event.getBlockAgainst();
-		boolean existingSpawner = blockAgainst.getType() == Material.SPAWNER;
+		boolean existingSpawner = blockAgainst.getType() == Material.SPAWNER && blockAgainst.getState() instanceof CreatureSpawner;
 		if (existingSpawner) {
 			StackedSpawnerRegistry.isStackedSpawner(blockAgainst, stackedSpawner -> {
+				event.setCancelled(true);
+
 				if (stackedSpawner.getEntityType() != spawnerType) {
 					player.sendMessage(HexUtil.colorify("&cThis is not the same entity type, please use a "
 							+ SpawnerUtil.getAppropriateEntityName(spawnerType) + " spawner instead!"));
 					return;
 				}
-
-				event.setCancelled(true);
 
 				final int previousStackAmount = stackedSpawner.getStackAmount();
 				int newStackAmount = previousStackAmount + (isSneaking ? itemAmount : 1);
@@ -147,8 +155,10 @@ public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSpawnerSpawn(SpawnerSpawnEvent event) {
+		if (event.isCancelled()) return;
+
 		final CreatureSpawner spawner = event.getSpawner();
 		StackedSpawnerRegistry.isStackedSpawner(spawner.getBlock(),
 				stackedSpawner -> {
@@ -166,7 +176,7 @@ public record StackedSpawnerListener(SpawnerDatabase spawnerDatabase) implements
 				});
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent event) {
 		final Block block = event.getBlock();
 		if (event.isCancelled() || block.getType() != Material.SPAWNER) return;

@@ -85,7 +85,7 @@ public final class SpawnerPlugin extends JavaPlugin {
 		this.spawnerBlockTypeTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
 			StackedSpawnerRegistry.cacheStackedSpawnerLoop(stackedSpawner -> {
 				final Block block = stackedSpawner.getBlock();
-				if (block.getType() != Material.SPAWNER) block.setType(Material.SPAWNER);
+				if (block.getType() != Material.SPAWNER) stackedSpawner.refreshSpawnerBlock();
 			});
 		}, fiveMinutesInSeconds * 20L, fiveMinutesInSeconds * 20L);
 	}

@@ -46,8 +46,6 @@ public final class StackedSpawner {
 		this.entityType = entityType;
 		this.stackAmount = stackAmount;
 
-		if (this.block.getType() != Material.SPAWNER) block.setType(Material.SPAWNER);
-
 		final CreatureSpawner creatureSpawner = this.getCreatureSpawner();
 		if (creatureSpawner == null) {
 			SpawnerPlugin.getInstance().getSpawnerDatabase().deleteStackedSpawner(this);
@@ -55,22 +53,16 @@ public final class StackedSpawner {
 			return;
 		}
 
-		creatureSpawner.setSpawnCount(1);
-		creatureSpawner.setSpawnedType(entityType);
-		creatureSpawner.update(true);
-
+		this.refreshSpawnerBlock();
 		this.updateHologram();
 	}
 
 	public StackedSpawner(Block block, EntityType entityType, int stackAmount) {
-		this(block.getWorld().getName(), block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ(),
-				entityType, stackAmount);
+		this(block.getWorld().getName(), block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ(), entityType, stackAmount);
 	}
 
 	public void updateHologram() {
-		final String line = "&a❖ &c{type} Spawner &8| &7{amount}x &a❖"
-				.replace("{type}", SpawnerUtil.getAppropriateEntityName(this.entityType))
-				.replace("{amount}", this.stackAmount + "");
+		final String line = "&a❖ &c{type} Spawner &8| &7{amount}x &a❖".replace("{type}", SpawnerUtil.getAppropriateEntityName(this.entityType)).replace("{amount}", this.stackAmount + "");
 
 		StackedSpawnerRegistry.updateHologram(this.getHologramLocation(), HexUtil.colorify(line));
 	}
@@ -92,12 +84,20 @@ public final class StackedSpawner {
 		return block.getWorld();
 	}
 
+	public void refreshSpawnerBlock() {
+		if (this.block.getType() != Material.SPAWNER) block.setType(Material.SPAWNER);
+
+		final CreatureSpawner creatureSpawner = this.getCreatureSpawner();
+		if (creatureSpawner == null) return;
+
+		creatureSpawner.setSpawnCount(1);
+		creatureSpawner.setSpawnedType(entityType);
+		creatureSpawner.update(true);
+	}
+
 	private Location getHologramLocation() {
 		final Location location = block.getLocation();
-		return new Location(getWorld(),
-				location.getBlockX() + 0.5,
-				location.getBlockY() + 1.5,
-				location.getBlockZ() + 0.5);
+		return new Location(getWorld(), location.getBlockX() + 0.5, location.getBlockY() + 1.5, location.getBlockZ() + 0.5);
 	}
 
 	public CreatureSpawner getCreatureSpawner() {
